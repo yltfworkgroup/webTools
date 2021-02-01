@@ -1,0 +1,64 @@
+
+#webTree{
+    position: absolute;
+    font-size: 16px;
+    z-index: 1;
+    height: 0;
+    overflow: auto;
+    background-color:antiquewhite;
+}
+#webTree .tree-list{
+    margin-left: 10px;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s;
+}
+#webTree .tree-list:first-child{
+    border: none;
+}
+
+#webTree .tree-item{
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+#webTree .tree-item:first-child{
+    border-top: none;
+}
+
+#webTree .tree-title{
+    font-size: 90%;
+    height: 25px;
+    width:100%;
+    display: flex;
+    align-items: center;
+}
+#webTree .tree-title:hover{
+    /* background-color: aqua; */
+    background-color: rgb(94, 230, 53);
+    /* background-color: #1cd7cd; */
+}
+#webTree .tree-title .tree-icon{
+    width: 14px;
+    height: 14px;
+    background: url("./right.svg") no-repeat;
+    background-size: 100%;
+}
+#webTree .tree-title a{
+    color: #000;
+    line-height: normal;
+}
+#webTree .tree-title:hover a{
+    color: #fff;
+}
+#webTree .tree-title a:hover{
+    text-decoration: underline;
+}
+
+#webTree .tree-nochild{
+    margin-left: 14px;
+}
+#webTree .tree-open{
+    transform: rotate(90deg);
+    transition: transform 0.3s;
+}
