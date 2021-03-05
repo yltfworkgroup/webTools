@@ -10,7 +10,7 @@
         elementID:"",
         element:"",
         ulElement:"",
-        liElement:"",
+        liElements:"",
         marginTop:"marginTop",
         transition:'margin-top 1s linear',
     };
@@ -23,6 +23,9 @@
 
     function setOption(o){
         option = o;
+        element = option.element;
+        ulElement = option.ulElement;
+        childElements = option.liElements;
     }
 
     function initElement(boxElement,listElement,blockElements){
@@ -55,6 +58,7 @@
     }
 
     const $box = {
+        setOption,
         initElement,
         clearTimer,
         run
