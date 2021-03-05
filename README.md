@@ -6,3 +6,6 @@
 
 ## layTableAyto
 二次封装后的layui.table表格组件
+
+## appNotifyBox
+移动端公告栏垂直滚动
