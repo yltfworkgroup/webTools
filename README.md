@@ -9,3 +9,7 @@
 
 ## appNotifyBox
 移动端公告栏垂直滚动
+
+## otherJS
+
+工具集JS
