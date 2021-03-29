@@ -7,14 +7,12 @@
     overflow: auto;
     background-color:white;
 }
-#webTree .tree-list{
+#webTree .tree-list {
     margin-left: 18px;
     height: 0;
     overflow: hidden;
     transition: height 0.3s;
-}
-#webTree .tree-list:first-child{
-    border: none;
+    background: url("./images/line_conn.gif") 0 0 repeat-y;
 }
 
 #webTree .tree-item{
@@ -22,8 +20,27 @@
     display: flex;
     flex-direction: column;
 }
-#webTree .tree-item:first-child{
-    border-top: none;
+#webTree .tree-item.tree-loading>.tree-title .tree-icon-state{
+    width:18px;
+    height:18px;
+    background: url("./images/loading.png") center no-repeat;
+    background-size: 80%;
+    animation: round 1.3s infinite linear;
+}
+#webTree .tree-item.tree-loading>.tree-list{
+    height: 0;
+}
+
+#webTree .tree-item.tree-open>.tree-title .tree-icon-state{
+    background-image: url("./images/zTreeStandard.png");
+    background-position: -92px -54px;
+}
+#webTree .tree-item.tree-open>.tree-title .tree-icon-home{
+    background-position: -110px -16px;
+}
+
+#webTree .tree-item.tree-open>.tree-list{
+    height: auto;
 }
 
 #webTree .tree-title{
@@ -34,9 +51,6 @@
     align-items: center;
 }
 
-#webTree .tree-title{
-
-}
 #webTree .tree-title .tree-icon-state{
     width: 18px;
     height: 18px;
@@ -54,28 +68,29 @@
     background-attachment: scroll;
     background-position: -110px 0;
     background-image: url("./images/zTreeStandard.png");
-    margin-right: 5px;
 }
 
-#webTree .tree-title .tree-nochild{
-    width: 16px;
-    height: 16px;
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-attachment: scroll;
-    background-image: url("./images/zTreeStandard.png");
-    background-position: -110px -16px;
-    margin-left:18px;
-    margin-right:5px;
+#webTree .tree-item.tree-nochild .tree-icon-state{
+    display: none;
+}
+#webTree .tree-item.tree-nochild .tree-icon-home{
+    margin-left: 22px;
+    margin-left: 4px;
+    margin-right: 4px;
+    background: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color:burlywood;
 }
 
-#webTree .tree-title.tree-open{
-    
-}
+
 
 #webTree .tree-title a{
     color: #000;
     line-height: normal;
+    white-space: nowrap;
+    margin-left: 5px;
 }
 #webTree .tree-title:hover a{
     color: #fff;
@@ -87,6 +102,15 @@
     background-color: rgb(92 171 206);
 }
 
+
+@keyframes round{
+    0%{
+        transform: rotate(0deg);
+    }
+    100%{
+        transform: rotate(360deg);
+    }
+}
 /* #webTree .tree-title:hover{
     background-color: rgb(92 171 206);
 }
