@@ -104,7 +104,7 @@
      * 获取计算后的时间
      * @param {String} attr 增加或减少的字段名
      * @param {Number} inc 增加或减少的量,正数为增加,负数为减小
-     * @param {Date,String} defaultDate 当前默认时间
+     * @param {Date,String} defaultDate 设置当前时间
      * @return {String} 不传参数时,返回当前时间,返回格式为:2020-01-01
      * 开发此方法消耗时间为:3小时15分
      */
@@ -415,6 +415,27 @@
         return formatterData;
     }
 
+    /**
+     * 绘画元素
+     * @param {*} elementID 要添加内容的元素
+     * @param {*} array 内容数组
+     * @param {*} htmlFun 单个块元素的html回调,要求返回String
+     */
+    function drawElement(elementID,array,htmlFun,append){
+        let element = (typeof elem=='string')?document.querySelector(elem):elem;
+        let html = "";
+        array.forEach(function(item,index){
+            if(typeof htmlFun == "function"){
+                html += htmlFun(item,index);
+            }
+        });
+        if(append!=undefined&&append==true){
+            element.innerHTML += html;
+        }else{
+            element.innerHTML  = html;
+        }
+    }
+
     //将elementIDArray中的元素的display设置为view
     function showElement(elementIDArray,view){
         if(view == undefined){ view = "block" }
@@ -465,6 +486,7 @@
         xhrGet,
         hiddenElement,
         showElement,
+        drawElement,
         getUrlParam
     }
     if (typeof module != 'undefined' && module.exports) {
