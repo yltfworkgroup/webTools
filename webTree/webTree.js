@@ -4,6 +4,7 @@
         element:'',
         callback:'',
         array:[],
+        inited:false,
 
         options:{
             label:'label',
@@ -22,9 +23,10 @@
             }
             if(userOption){ this.options = userOption; }
             this.setOption();
-            this.hide();
             drawWebTreeList(id,array,this);
             appendClickEvent(this.element);
+            this.inited = true;
+            this.hide();
         },
         setOption(){
             if(this.options.width){
@@ -47,45 +49,48 @@
                     }
                 }
             }
-
-            //配置json数组级别,记录当前显示的与点击的是第几级数组
-            if(this.array[0].pointlevel == undefined){
-                this.array.forEach(function(item,index){
-                    item.pointlevel = 1;
-                })
-            }
         },
         show(){
+            if(this.inited != true){ return; }
             this.element.style.height = this.options.height;
         },
         hide(){
+            if(this.inited != true){ return; }
             this.element.style.height = "0px";
         },
         changeView(){
+            if(this.inited != true){ return; }
             if(this.element.style.height!="0px"){
                 this.hide();
             }else{
                 this.show();
             }
         },
-        lazyAjax(callback){
+        lazyAjax(ajaxobj,callback){
             let this_ = this;
-            this.options.lazyAjax(function(arr){
+            this.options.lazyAjax(ajaxobj,function(arr){
                 callback({ id:this_.element.id,array:arr,tree:this_ });
             });
-        },
-        setValue(){
-            let object = {}
-            this.callback(object);
         }
     }
-
+    
     //绘画列表
     function drawWebTreeList(id,array,tree,append){
         $webTreeDrawElement(id,array,function(item,index){
-            let html = $webTreeGetHtml(item,tree);
-            return html;
-        },append)
+            if($webTree.options.lazy!=undefined&&$webTree.options.lazy==true){
+                if(item[$webTree.options.child]==undefined){
+                    return $webTreeGetHtml(item,tree,true);
+                }
+                if(item[$webTree.options.child].length==0){
+                    return $webTreeGetHtml(item,tree,false);
+                }
+            }else{
+                if(item[$webTree.options.child]==undefined||item[$webTree.options.child].length==0){
+                    return $webTreeGetHtml(item,tree,false);
+                }
+            }
+            return $webTreeGetHtml(item,tree,true);
+        },append);
     }
 
 
@@ -115,7 +120,7 @@
         }
     }
 
-    function $webTreeGetHtml(item,tree){
+    function $webTreeGetHtml(item,tree,hasChild){
         let lihtml = '';
         if( 
             (tree.options.lazy!=undefined&&tree.options.lazy == true) ||
@@ -125,8 +130,11 @@
         }else{
             lihtml += '<li class="tree-item tree-nochild"><span class="tree-title"><i class="tree-icon-state"></i><i class="tree-icon-home"></i>';
         }
+        if(hasChild == false){
+            lihtml = '<li class="tree-item tree-nochild"><span class="tree-title"><i class="tree-icon-state"></i><i class="tree-icon-home"></i>';
+        }
         lihtml += '<a>' + item[tree.options.label] + '</a>';
-        lihtml += '<i style="display:none">' + item[tree.options.value] + ',' + item.pointlevel + '</i></span>';
+        lihtml += '<i style="display:none">' + item[tree.options.label] + ',' + item[tree.options.value] + '</i></span>';
         if(
             (tree.options.lazy!=undefined&&tree.options.lazy == false) &&
             (item[tree.options.child]&&item[tree.options.child].length!=0)
@@ -158,10 +166,23 @@
         }
     }
     function $webTreeSpanClick(e){
-        let parent = e.parentElement;
+        let parent = "";
+        if(e.parentElement.className.indexOf('tree-title')!=-1){
+            parent = e.parentElement.parentElement;
+        }else{
+            parent = e.parentElement;
+        }
         if(parent.className.indexOf('tree-open')!=-1){
             parent.classList.remove('tree-open');
         }else{
+            if(parent.className.indexOf('tree-nochild')!=-1){
+                if(parent.children[0].className.indexOf('tree-title')!=-1){
+                    $webTreeLinkClick(parent.children[0].children[0]);
+                }else{
+                    $webTreeLinkClick(parent.children[0]);
+                }
+                return;
+            }
             parent.classList.add('tree-open');
             if($webTree.options.lazy!=undefined&&$webTree.options.lazy==true){
                 parent.classList.remove('tree-open');
@@ -170,9 +191,24 @@
                 for(let i=0;i<oldlist.length;i++){
                     parent.removeChild(oldlist[i]);
                 }
-                $webTree.lazyAjax(function(obj){
+
+                let searchInfo = '';
+                if(parent.children[0].className.indexOf('tree-title')!=-1){
+                    searchInfo = parent.children[0].children
+                }else{
+                    searchInfo = parent.children;
+                }
+                let searchArr = searchInfo[searchInfo.length-1].innerHTML.split(',');
+                let ajaxobj = {};
+                ajaxobj[$webTree.options.label] = searchArr[0];
+                ajaxobj[$webTree.options.value] = searchArr[1];
+                $webTree.lazyAjax(ajaxobj,function(obj){
                     if(obj.array.length == 0){
-                        parent.classList.add('tree-nochild');
+                        if(parent.children[0].className.indexOf('tree-title')!=-1){
+                            $webTreeLinkClick(parent.children[0].children[0]);
+                        }else{
+                            $webTreeLinkClick(parent.children[0]);
+                        }
                         return;
                     }
                     let ul = document.createElement('ul');
@@ -184,14 +220,24 @@
                     parent.classList.remove('tree-loading');
                     parent.classList.add('tree-open');
                 });
-                
             }
         }
     }
     function $webTreeLinkClick(e){
+        if(e.parentElement.parentElement.className.indexOf('tree-loading')!=-1){
+            e.parentElement.parentElement.classList.remove('tree-loading');
+        }
         //获取当前点击的对象的值
         let searchInfo = e.parentNode.children;
-        console.log(searchInfo);
+        let searchArr = searchInfo[searchInfo.length-1].innerHTML.split(',');
+        let lastobj = {};
+        lastobj[$webTree.options.label] = searchArr[0];
+        lastobj[$webTree.options.value] = searchArr[1];
+        // lastobj.pointlevel = searchArr[2];
+        if(typeof $webTree.callback == "function"){
+            $webTree.callback(lastobj);
+            $webTree.hide();
+        }
     }
     
 

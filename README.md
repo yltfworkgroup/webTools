@@ -1,15 +1,24 @@
 # webTools
-个人平时写的一些小公举
+此项目为个人练习项目,所用一切工具集插件均为学习所需.
 
 ## webTree
-使用js原生语法编写的一个树形图插件
+模仿zTree所写的一个树形控件,使用js原生语法编写
+图片引用自zTree与iconfont
 
-## layTableAyto
-二次封装后的layui.table表格组件
+## noticeBox
+垂直公告盒子,无限滚动
 
-## appNotifyBox
-移动端公告栏垂直滚动
+## mobiCitypicker
+移动端多级联动,无限联动
 
 ## otherJS
+个人工具集合
 
-工具集JS
+### useRem
+使用css的rem布局时的一些配置
+
+### xhrRequest
+使用原生js编写的请求对象,运用了线程池的方式,一定程度上节省了创建新对象的开销
+
+### tools
+封装了个人常用的一些方法,是一个工具集

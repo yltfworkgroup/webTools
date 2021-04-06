@@ -7,3 +7,4 @@ $box.initElement(
     document.getElementsByTagName('ul')[0].getElementsByTagName('li')
 );
 $box.run();
+```

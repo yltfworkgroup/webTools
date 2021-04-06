@@ -15,8 +15,8 @@
             }
         },
         reset:function(width,fontsize){
-            if(width == undefined){ width=1080 };
-            if(fontsize == undefined){ fontsize=100 };
+            if(width == undefined){ width=$useRem.designWidth };
+            if(fontsize == undefined){ fontsize=$useRem.fontSize };
             setRem(width,fontsize);
         },
         addResize:function(){
