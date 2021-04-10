@@ -1,61 +1,35 @@
 /**
  * 创建时间:2021-02-04
  * 作者:XueLiang.Zhai
+ * 更新时间:2021-04-10 v0.1.1
  */
 (function (window, document, Math) {
 
-    /** loading全局变量 */
-    let loadingbox = {
-        init:false,
-        mask:"",
-        box:"",
-        title:""
-    }
     /**
-     * 避免覆盖现有的window.onload的方法
-     * @param {any} callback 回调函数,在window.onload执行后执行此函数
-     * @author XueLiang.Zhai
-     * @text 参考文章:https://www.cnblogs.com/jackson-yqj/p/5949060.html
-     * @date 2021-01-24
+     * 在DOM准备就绪后,执行callback
      */
-    function $ready(callback) {
-        let oldOnload = window.onload;
-        //console.log(oldOnload)
-        if (typeof oldOnload != "function") {
-            //console.log("newOnload")
-            window.onload = callback;
-        } else {
-            window.onload = function () {
-                oldOnload();
+    function $ready(callback){
+        window.addEventListener('load',function(){
+            if(typeof callback == "function"){
                 callback();
             }
-        }
+        })
     }
 
     /**
-     * 避免覆盖现有的window.resize的方法
-     * @param {any} callback 回调函数,在window.resize执行后执行此函数
-     * @author XueLiang.Zhai
-     * @text 参考文章:https://www.cnblogs.com/jackson-yqj/p/5949060.html
-     * @date 2021-01-24
+     * 在浏览器窗口变化后,执行callback
      */
-    function $resize(callback) {
-        let oldResize = window.onresize;
-        //console.log(oldResize)
-        if (typeof oldResize != "function") {
-            //console.log("newResize")
-            window.onresize = callback;
-        } else {
-            window.onresize = function () {
-                oldResize();
+    function $resize(callback){
+        window.addEventListener('resize',function(){
+            if(typeof callback == "function"){
                 callback();
             }
-        }
+        })
     }
 
     /**
      * 获取指定的cookie值
-     * @param {String} str 要查询的Cookie字段名
+     * @param {string} str 要查询的Cookie字段名
      */
     function getCookie(str){
         let arr = document.cookie.split("; ");
@@ -71,7 +45,7 @@
 
     /**
      * 删除指定的cookie值
-     * @param {String} str 要删除的Cookie字段名
+     * @param {string} str 要删除的Cookie字段名
      */
     function removeCookie(str){
         let date = new Date();
@@ -85,344 +59,204 @@
      * @param {String} attr 指定的字段名
      * @param {Boolean} asc 是否升序,默认升序排列 
      */
-    function arraySort(arr = [], attr, asc) {
-        if(attr == undefined){ attr = ""; };
-        if(asc == undefined){ asc = true; };
+    function arraySort(arr,attr,asc) {
+        if(!arr){ arr=[]; }
+        if(!attr){ attr=""; };
+        if(asc==undefined){ asc=true; };
         if (arr.length <= 1) { return arr; }
         if (arr[0][attr] == undefined) {
-          console.log(attr + " is undefined!");
+          console.log("arraySort() Error->>"+attr + " is undefined!");
           return arr;
         }
-        return arr.sort((a, b) => {
+        return arr.sort(function(a, b){
           if (asc) { return a[attr] - b[attr]; } //升序
           else { return b[attr] - a[attr]; } //降序
         });
     }
 
-
     /**
      * 获取计算后的时间
-     * @param {String} attr 增加或减少的字段名
-     * @param {Number} inc 增加或减少的量,正数为增加,负数为减小
-     * @param {Date,String} defaultDate 设置当前时间
-     * @return {String} 不传参数时,返回当前时间,返回格式为:2020-01-01
-     * 开发此方法消耗时间为:3小时15分
+     * @param {number} count 0-返回当前时间,正数增加天数,负数减小天数
+     * @param {object} options 配置项:defaultDate-设置默认时间 isFormatter-是否格式化日期(返回字符串) hasTime-格式化后的字符串是否带有时间
      */
-    function getDateByCount(attr = "day", inc = 0, defaultDate) {
-        if(defaultDate == undefined){ defaultDate = new Date(); }
-        let date = new Date(defaultDate);
-        let year = date.getFullYear();
-        let month = date.getMonth() + 1; //获取的月份默认为0-11,0为一月份
-        let day = date.getDate();
-        if (inc != 0) {
-        // console.log("计算前的日期:"+date.toLocaleDateString());
-        // console.log(attr + "字段,增加/减少" + inc +",计算开始");
+    function getDate(count,options){
+        if(!count){ count=0; }
+        if(!options){ options={}; }
+        if(!options.defaultDate){ defaultDate=new Date(); }
+        console.log(typeof options.isFormatter != "Boolean");
+        if(options.isFormatter==undefined&&typeof options.isFormatter != "Boolean"){ options.isFormatter = true; }
+        let currentTime = new Date(options.defaultDate).getTime();
+        let result = new Date(currentTime + (1000*60*60*24*count));
+        if(isFormatter==false){ return result; }
+        let formatter = "";
+        let year=result.getFullYear(),month=result.getMonth()+1,day=result.getDate();
+        let hours=result.getHours(),minute=result.getMinutes(),second=result.getSeconds();
+        if(month<10){ month = "0" + month; }
+        if(day  <10){ day = "0" + day; }
+        formatter += year + "-" + month + "-" + day;
+        if(options.hasTime==true){
+            if(hours<10){ hours = "0" + hours; }
+            if(minute<10){ minute = "0" + minute; }
+            if(second<10){ second = "0" + second; }
+            formatter += " " + hours + ":" + minute + ":" + second;
         }
-        // console.log(month + "月份有多少天:"+new Date(2020, 2, 0).getDate());
-        //增加monthCount个月
-        let appendMonth = function(monthCount) {
-        // console.log("进入增加月份算法");
-        if (monthCount < 1) {
-            return;
-        }
-        month += monthCount;
-        // console.log("增加后的月份为:" + month);
-        while (month > 12) {
-            // console.log("月份超过一年,增加年份");
-            month -= 12;
-            // console.log("剩余月份:" + month);
-            year++;
-        }
-        };
-        //增加dayCount天
-        let appendDay = function(dayCount) {
-        // console.log("进入增加天数算法");
-        if (dayCount < 1) {
-            return;
-        }
-        //获取本月份总天数
-        let monthCountDay;
-        monthCountDay = new Date(year, month, 0).getDate();
-        // console.log("本月份总天数:"+monthCountDay);
-        day += dayCount;
-        while (day > monthCountDay) {
-            // console.log("天数"+day+"超过-本-月份天数");
-            // console.log("计算:" + day + "-" + monthCountDay);
-            day = day - monthCountDay;
-            // console.log("剩余天数:" + day);
-            appendMonth(1);
-            monthCountDay = new Date(year, month, 0).getDate();
-            // console.log("计算"+year+"年"+month+"月份的天数:"+monthCountDay);
-        }
-        // console.log("增加天数算法计算完成");
-        };
-        //减少monthCount个月
-        let subMonth = function(monthCount) {
-        // console.log("进入减少月份的算法");
-        if (monthCount < 1) {
-            return;
-        }
-        //先减年份
-        while (monthCount > 12) {
-            // console.log("减少的月份大于一年");
-            year--;
-            monthCount -= 12;
-        }
-        if (monthCount >= month) {
-            // console.log("减少的月份大于等于今年所在月份");
-            year--;
-            month = month + 12 - monthCount;
-        } else {
-            month = month - monthCount;
-        }
-        // console.log("减少月份后的时间:"+year+"年"+month+"月");
-        };
-        //减少dayCount天
-        let subDay = function(dayCount) {
-        // console.log("进入减少天数的算法");
-        if (dayCount >= day) {
-            // console.log("减少的天数大于等于当前所在月份的天数");
-            //计算上个月的总天数
-            let preMonthCountDay;
-            if (month == 1) {
-            preMonthCountDay = new Date(year - 1, 12, 0).getDate();
-            // console.log("上个月是:"+(year-1)+"年"+12+"月,总天数为:"+preMonthCountDay);
-            } else {
-            preMonthCountDay = new Date(year, month - 1, 0).getDate();
-            // console.log("上个月是:"+year+"年"+(month-1)+"月,总天数为:"+preMonthCountDay);
-            }
-            subMonth(1);
-            dayCount -= day;
-            while (dayCount >= preMonthCountDay) {
-            // console.log("剩余未减天数大于前一个月的总天数,剩余未减天数:"+dayCount);
-            dayCount -= preMonthCountDay;
-            subMonth(1);
-            // console.log("重新设置上个月天数");
-            if (month == 1) {
-                preMonthCountDay = new Date(year - 1, 12, 0).getDate();
-                // console.log("上个月是:"+(year-1)+"年"+12+"月,总天数为:"+preMonthCountDay);
-            } else {
-                preMonthCountDay = new Date(year, month - 1, 0).getDate();
-                // console.log("上个月是:"+year+"年"+(month-1)+"月,总天数为:"+preMonthCountDay);
-            }
-            }
-            day = new Date(year, month, 0).getDate() - dayCount;
-            // console.log("当前位于所在月份的第"+day+"天");
-        } else {
-            day -= dayCount;
-        }
-            // console.log("减少天数算法计算完成");
-        };
-    
-        //触发增加月份
-        if (attr == "month" && inc > 0) {
-            // console.log("增加"+ inc + "个月,一个月按照30天计算");
-            let countDay = 0;
-            for (let i = 0; i < inc; i++) {
-                //一个月按30天计算
-                countDay += 30;
-            }
-            // console.log("总计增加天数:"+countDay);
-            appendDay(countDay);
-        }
-        //触发增加天数
-        if (attr == "day" && inc > 0) {
-            appendDay(inc);
-        }
-        //触发减少月份
-        if (attr == "month" && inc < 0) {
-            inc = -inc;
-            // console.log("减少"+ inc + "个月,一个月按照30天计算");
-            let countDay = 0;
-            for (let i = 0; i < inc; i++) {
-                //一个月按30天计算
-                countDay += 30;
-            }
-            // console.log("总计减少天数:"+countDay);
-            subDay(countDay);
-        }
-        //触发减少天数
-        if (attr == "day" && inc < 0) {
-            subDay(-inc);
-        }
-        //格式化时间
-        if (month < 10) {
-            month = "0" + month;
-        }
-        if (day < 10) {
-            day = "0" + day;
-        }
-        let formatter = year + "-" + month + "-" + day;
-        // console.log("getDateByCount()返回值:"+formatter);
         return formatter;
     }
 
     /**
-     * 传入时间,获取格式化后的时间
-     * @param {Date} defaultDate
-     * @date 2021-03-03
+     * 获取start-end时间段内一共有多少天
+     * @param {string} startDate 开始时间 2021-04-10或可以转换为日期的其他格式
+     * @param {string} endDate 结束时间 2021-04-10或可以转换为日期的其他格式
      */
-     function dateFormatter(defaultDate,hasTime,formatterText){
-        if(defaultDate == undefined){ defaultDate = new Date(); };
-        if(hasTime == undefined){ hasTime = true; }
-        if(formatterText == undefined){ formatterText=''}
-        let date = new Date(defaultDate);
-        let year = date.getFullYear();
-        let month = date.getMonth() + 1; //获取的月份默认为0-11,0为一月份
-        let day = date.getDate();
-        let hour = date.getHours();
-        let minute = date.getMinutes();
-        let second = date.getSeconds();
-        //格式化时间
-        if (month < 10) {
-            month = "0" + month;
+    function getCountDay(startDate,endDate){
+        let msecond1 = new Date(startDate).getTime();
+        let msecond2 = new Date(endDate).getTime();
+        return (msecond1 - msecond2) / (1000 * 60 * 60 * 24);
+    }
+
+    /**
+     * 格式化日期字符串
+     * @param {string} 日期字符串 2021-04-10或可以转换为日期的其他格式
+     * @param {object} 配置项:hasTime-是否带有时间 datelabel-日期分隔符 timelabel-时间分隔符 separator-日期与时间的分隔符
+     */
+    function dateFormatter(date,options){
+        if(!options){ options = {}; }
+        if(options.hasTime==undefined){ options.hasTime=false; }
+        if(!options.datelabel){ options.datelabel="-"; }
+        if(!options.timelabel){ options.timelabel=":"; }
+        if(!options.separator){ options.separator=" "; }
+        let d = new Date(date);
+        let year=d.getFullYear(),month=d.getMonth()+1,day=d.getDate();
+        let hours=d.getHours(),minute=d.getMinutes(),second=d.getSeconds();
+        let formatter = "";
+        formatter += year + options.datelabel + month + options.datelabel + day;
+        if(options.hasTime==true){
+            formatter += options.separator + hours + options.timelabel + minute + options.timelabel + second;
+        }else if(options.hasTimeUnit){
+            formatter += options.separator + hours + "时" + minute + "分" + second + "秒";
         }
-        if (day < 10) {
-            day = "0" + day;
-        }
-        if(hour < 10){
-            hour = "0" + hour;
-        }
-        if(minute < 10){
-            minute = "0" + minute;
-        }
-        if(second < 10){
-            second = "0" + second;
-        }
-        let formatter = year + "-" + month + "-" + day;
-        if(hasTime){
-            formatter += " " + hour + ":" + minute + ":" + second;
-        }
-        if(formatterText != undefined && formatterText !=''){
-            let textArr = formatterText.split('-')
-            if(textArr.length != 6){ return formatter; }
-            formatter = year + textArr[0] + month + textArr[1] + day + textArr[2];
-            if(hasTime){
-                formatter += " " + hour + textArr[3] + minute + textArr[4] + second + textArr[5];
-            }
-        }
-        // console.log("getDateByCount()返回值:"+formatter);
         return formatter;
     }
-    
+
     /**
-     * 自定义loading
-     * @author XueLiang.Zhai
-     * @date 2021-02-22
+     * 简单加载框
      */
-    function initLoading(){
-        //初始化toolsLoading.开始
-        loadingbox.mask = document.createElement('div');
-        loadingbox.mask.style.cssText = 
-            'position:fixed;top:0;left:0;height:100%;width:100%;display:none';
-        document.body.appendChild(loadingbox.mask);
+    function EasyLoading(options){
+        this.element = {
+            mask:"",
+            view:"",
+            icon:"",
+            text:"",
+            style:""
+        };
 
-        loadingbox.box = document.createElement('div');
-        loadingbox.box.style.cssText = 
-            'position:fixed;top:calc(50% - 75px);left:calc(50% - 75px);height:150px;' + 
-            'width:150px;background-color:rgba(0,0,0,0.6);border-radius:6px;' +
-            'display:none;flex-direction: column;align-items:center;';
-        document.body.appendChild(loadingbox.box);
-
-        let icon = document.createElement('div');
-        icon.style.cssText = 
-            'height:60%;width:60%;display:flex;align-items:center;' +
-            'justify-content:center;margin-top:8px';
-        loadingbox.box.appendChild(icon);
-
-        let style = document.createElement('style');
-        let keyframe = "@keyframes toolsLoading {"+
-            "            0% {"+
-            "                transform: rotate(0deg);"+
-            "            }"+
-            "            100% {"+
-            "                transform: rotate(360deg);"+
-            "            }"+
-            "        }";
-        style.innerHTML = keyframe;
-        document.body.appendChild(style);
-
-        let circle = document.createElement('div');
-        circle.style.cssText = 
-            'width:80%;height:80%;border-radius:50%;border:5px solid rgba(0,0,0,0.2);' +
-            'border-top:5px solid #fff;animation:toolsLoading 0.8s linear infinite';
-        icon.appendChild(circle);
-
-        loadingbox.title = document.createElement('span');
-        loadingbox.title.style.cssText = 
-            'color:#fff;margin-top:10px';
-        loadingbox.box.appendChild(loadingbox.title);
-        loadingbox.init = true;
-        //初始化toolsLoading.结束
-    }
-    //显示loading
-    function showLoading(messgae){
-        if(messgae == undefined){ messgae = "Loading..."; }
-        if(loadingbox.init == false){
-            initLoading();
+        EasyLoading.prototype.init = function(){
+            let mask,view,icon,text,style;
+            style = document.createElement('style');
+            mask = document.createElement('div');
+            view = document.createElement('div');
+            icon = document.createElement('div');
+            text = document.createElement('span');
+            mask.classList.add('e-load-mask');
+            view.classList.add('e-load-view');
+            icon.classList.add('e-load-icon');
+            text.classList.add('e-load-text');
+            view.appendChild(icon);
+            view.appendChild(text);
+            mask.appendChild(view);
+            document.body.appendChild(mask);
         }
-        loadingbox.mask.style.display = "block";
-        loadingbox.box.style.display = 'flex';
-        loadingbox.title.innerHTML = messgae;
-    }
-    //隐藏loading
-    function closeLoading(callback){
-        loadingbox.mask.style.display = "none";
-        loadingbox.box.style.display = 'none';
-        //此方法为非异步--此回调为预留回调
-        if(typeof callback == "function"){
-            callback()
+
+        EasyLoading.prototype.show = function(){
+            this.element.mask.classList.add('e-mask-show');
         }
+        
+        EasyLoading.prototype.hide = function(){
+            this.element.mask.classList.add('e-mask-hide');
+        }
+
+        this.init();
     }
 
-    //简单get请求
-    function xhrGet(url,callback){
-        let xhr = new XMLHttpRequest();
-        xhr.open("get",url);
-        xhr.onload = function(){
-            callback(this.response);
-        }
-        xhr.send(null);
-    }
+    /**
+     * 简单ajax请求-无request方法
+     */
+    function EasyXhrRequest(){
+        this.pool = [];
 
-    //简单post请求
-    function xhrPost(data,url,callback,option){
-        let xhr = new XMLHttpRequest();
-        xhr.open("post",url);
-        if(option != undefined){
-          if(option.json == true){
-            xhr.setRequestHeader('content-type','application/json');
-            data= JSON.stringify(data);
-          }
-          if(option.formData == true){
-            xhr.setRequestHeader('content-type','application/x-www-form-urlencoded');
-            data = xhrFormData(data);
-          }
+        let formatterdata = function(data){
+            let fd = "";
+            for(let i=0;i<Object.keys(data).length;i++){
+                fd += Object.keys(data)[i];
+                fd += "=" + Object.values(data)[i] + "&";
+            }
+            fd = fd.substring(0,fd.length-1);
+            return fd;
         }
-        xhr.onload = function(){
-          callback(JSON.parse(this.response));
+        //获取当前xhr实例
+        EasyXhrRequest.prototype.getInstance = function(){
+            for(let i=0;i<this.pool.length;i++){
+                if(this.pool[i].readyState==0||this.pool[i].readyState==4){
+                    return this.pool[i];
+                }
+            }
+            let newXhr = new XMLHttpRequest();
+            this.pool.push(newXhr);
+            return newXhr;
         }
-        xhr.send(data);
-    }
-
-    //xhr中请求头为application/x-www-form-urlencoded时,data需要转换
-    function xhrFormData(data){
-        let formatterData = "";
-        for(let i=0;i<Object.keys(data).length;i++){
-          formatterData += Object.keys(data)[i];
-          formatterData += "=" + Object.values(data)[i] + "&";
+        //配置当前xhr参数
+        EasyXhrRequest.prototype.setOptions = function(xhr,data,options){
+            let reqdata = "";
+            if(!options){ reqdata = data; }
+            if(options.dataType=="json"){
+                xhr.setRequestHeader("content-type","application/json");
+                reqdata = JSON.stringify(data);
+            }else if(options.dataType=="formdata"){
+                xhr.setRequestHeader("content-type","application/x-www-form-urlencoded");
+                reqdata = formatterdata(data);
+            }
+            return reqdata;
         }
-        return formatterData;
+        //发送post请求
+        EasyXhrRequest.prototype.post = function(data,url,callback,options){
+            let freexhr = this.getInstance();
+            freexhr.open('post',url);
+            if(typeof callback == "function"){
+                freexhr.onload = function(){
+                    callback(JSON.parse(this.response));
+                }
+                freexhr.onerror = function(){
+                    callback(this);
+                }
+            }
+            let reqdata = this.setOptions(freexhr,data,options);
+            freexhr.send(reqdata);
+        }
+        //发送get请求
+        EasyXhrRequest.prototype.get = function(data,url,callback,options){
+            let freexhr = this.getInstance();
+            url += "?" + formatterdata(data);
+            freexhr.open('get',url);
+            if(typeof callback == "function"){
+                freexhr.onload = function(){
+                    callback(JSON.parse(this.response));
+                }
+                freexhr.onerror = function(){
+                    callback(this);
+                }
+            }
+            freexhr.send(null);
+        }
     }
 
     /**
      * 绘画元素
-     * @param {*} elementID 要添加内容的元素
+     * @param {*} elem 要添加内容的元素,ID或者Dom对象
      * @param {*} array 内容数组
      * @param {*} htmlFun 单个块元素的html回调,要求返回String
      */
-    function drawElement(elementID,array,htmlFun,append){
-        let element = (typeof elem=='string')?document.querySelector(elem):elem;
+    function drawElement(elem,array,htmlFun,append){
+        let element = (typeof elem=='string'&&elem.indexOf("#")!=-1)?document.querySelector(elem):elem;
         let html = "";
         array.forEach(function(item,index){
             if(typeof htmlFun == "function"){
@@ -436,7 +270,9 @@
         }
     }
 
-    //将elementIDArray中的元素的display设置为view
+    /**
+     * 将elementIDArray中的元素的display设置为view
+     */
     function showElement(elementIDArray,view){
         if(view == undefined){ view = "block" }
         for(let i=0;i<elementIDArray.length;i++){
@@ -444,14 +280,34 @@
         }
     }
 
-    //将elementIDArray中的元素的display设置为none
+    /**
+     * 将elementIDArray中的元素的display设置为none
+     */
     function hiddenElement(elementIDArray){
         for(let i=0;i<elementIDArray.length;i++){
           document.querySelector("#"+elementIDArray[i]).style.display = "none";
         }
     }
 
-    //获取地址栏的参数
+    /**
+     * 给element元素添加class
+     */
+    function addClass(elem,className){
+        let element = (typeof elem=='string')?document.querySelector('#'+elem):elem;
+        element.classList.add(className);
+    }
+
+    /**
+     * 移除element元素的class
+     */
+    function removeClass(elem,className){
+        let element = (typeof elem=='string')?document.querySelector('#'+elem):elem;
+        element.classList.remove(className);
+    }
+
+    /**
+     * 获取地址栏的参数
+     */
     function  getUrlParam(name) {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
         var r = window.location.search.substr(1).match(reg);
@@ -460,17 +316,12 @@
         return null;
     }
 
-    
-
-
-
-
-
-
-
-
-
-
+    /**
+     * 简单深拷贝
+     */
+    function deepCopy(object){
+        return JSON.parse(JSON.stringify(object));
+    }
 
     const tools = {
         $ready,
@@ -478,17 +329,21 @@
         getCookie,
         removeCookie,
         arraySort,
-        getDateByCount,
+        getDate,
+        getCountDay,
         dateFormatter,
-        showLoading,
-        closeLoading,
-        xhrPost,
-        xhrGet,
-        hiddenElement,
-        showElement,
         drawElement,
-        getUrlParam
+        showElement,
+        hiddenElement,
+        addClass,
+        removeClass,
+        getUrlParam,
+        deepCopy,
+
+        EasyLoading,
+        EasyXhrRequest
     }
+    
     if (typeof module != 'undefined' && module.exports) {
         module.exports = tools;
     } else {
